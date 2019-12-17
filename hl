@@ -4,6 +4,7 @@ usage() {
   echo "Usage:   $(basename $0) [<color> <regex>]+"
   echo "         Call a sed to higlight text with colors. Optionally show only matching lines."
   echo "Options: --only|-o Show only matching lines of next patterns (use a grep on patterns)"
+  echo "         --and|-a  Show only matching lines of all next patterns (use piped grep)"
   echo "         --        Stop arguments parsing and give the rest of arguments to sed"
   echo "Color:   Color is defined with a combination of background and foreground and flag, at least one is needed"
   echo "         <backround in [DG_ R_ G_ Y_ B_ P_ C_ LG_]><foreground in [DG R G Y B P C LG K]><flag in [_N _B _U _K _I]>"
@@ -11,8 +12,8 @@ usage() {
   echo "         _N or N = Normal ; _B = Bold ; _U Underline ; _K = blinK ; _I = Invert"
   echo "         For example: B will be printed in Blue"
   echo "                      _I will swap foreground and background color"
-  echo "                      Y_U will be printed in Yellow and Underlined"
-  echo "                      DG_R_B will be printed over Dark Grey in Red and Bolded"
+  echo "                      Y_U will be printed in Yellow and Underline"
+  echo "                      DG_R_B will be printed over Dark Grey in Red and Bold"
 }
 
 setCol() {
@@ -39,13 +40,15 @@ setCol() {
 [[ "$1" == "" ]] && echo Missing arguments 1>&2 && usage && exit 1
 
 ONLY=false
+AND=false
 notEndLoop=true
 
 while $notEndLoop
 do
   [[ "$1" == "--" ]] && shift && notEndLoop=false
   [[ "$1" == "--help" || "$1" == "-h" ]] && usage && exit
-  [[ "$1" == "--only" || "$1" == "-o" ]] && ONLY=true && sedExpr="" && shift
+  [[ "$1" == "--only" || "$1" == "-o" ]] && ONLY=true && sedExpr="" && grepExpr="" && shift
+  [[ "$1" == "--and" || "$1" == "-a" ]] && AND=true && shift
   [[ "$1" == "" ]] && notEndLoop=false
 
   if $notEndLoop; then
@@ -54,12 +57,22 @@ do
     [[ "$pattern" == "" ]] && echo Missing pattern arguments 1>&2 && exit 1
 
     sedExpr=$sedExpr" -e 's@\(${pattern}\)@$(echo -e ${!color})\1$(echo -e ${N})@g'" 
-    if $ONLY; then grepExpr=$grepExpr" -e '$pattern'"; fi
+    if $ONLY; then 
+      if [[ "$grepExpr" == "" ]]; then
+          grepExpr="grep -e '$pattern'"
+      else
+        if $AND; then
+          grepExpr=$grepExpr" | grep -e '$pattern'"
+        else
+          grepExpr=$grepExpr" -e '$pattern'"
+        fi
+      fi
+    fi
   fi
 done
 
 if $ONLY; then
-  eval "grep $grepExpr | sed $sedExpr $@"
+  eval "$grepExpr | sed $sedExpr $@"
 else
   eval "sed $sedExpr $@"
 fi
