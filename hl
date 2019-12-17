@@ -1,29 +1,39 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage:   $(basename $0) [<color> <regex>]+"
-  echo "         Call a sed to higlight text with colors. Optionally show only matching lines."
-  echo "Options: --only|-o Show only matching lines of next patterns (use a grep on patterns)"
-  echo "         --and|-a  Show only matching lines of all next patterns (use piped grep)"
-  echo "         --        Stop arguments parsing and give the rest of arguments to sed"
-  echo "Color:   Color is defined with a combination of background and foreground and flag, at least one is needed"
-  echo "         <backround in [DG_ R_ G_ Y_ B_ P_ C_ LG_]><foreground in [DG R G Y B P C LG K]><flag in [_N _B _U _K _I]>"
-  echo "         DG = Dark Grey ; R = Red ; G = Green ; Y = Yellow ; B = Blue ; P = Purple ; C = Cyan ; LG = Light Grey ; K = blacK"
-  echo "         _N or N = Normal ; _B = Bold ; _U Underline ; _K = blinK ; _I = Invert"
-  echo "         For example: B will be printed in Blue"
-  echo "                      _I will swap foreground and background color"
-  echo "                      Y_U will be printed in Yellow and Underline"
-  echo "                      DG_R_B will be printed over Dark Grey in Red and Bold"
+  echo -e "Usage:   $_D$(basename $0)$N ( (--only|-o)? (--and|-a)? ($B<color>$N $Y<regex>$N) )+"
+  echo -e "         Call a sed to higlight text with colors. Optionally show only matching lines."
+  echo -e "Options: $_D--only|-o$N Show only matching lines of next patterns (use a grep on patterns)"
+  echo -e "         $_D--and|-a$N  Show only matching lines of all next patterns (use piped grep)"
+  echo -e "         $_D--$N        Stop arguments parsing and give the rest of arguments to sed"
+  echo -e "Color:   ${B}color$N is defined with a combination of background and foreground and flag, at least one is needed"
+  echo -e "         <backround in [DG_ R_ G_ Y_ B_ P_ C_ LG_]><foreground in [DG R G Y B P C LG K]><flag in [_N _D _U _K _I]>"
+  echo -e "         DG = ${DG}Dark Grey$N ; R = ${R}Red$N ; G = ${G}Green$N ; Y = ${Y}Yellow$N ; B = ${B}Blue$N ; P = ${P}Purple$N ; C = ${C}Cyan$N ; LG = ${LG}Light Grey$N"
+  echo -e "         _N or N = Normal ; _D = ${_D}Bold$N ; _U ${_U}Underline$N ; _K = ${_K}blinK$N ; _I = ${_I}Invert$N"
+  echo -e "            DG R G Y B P C LG ; DG R G Y B P C LG with _D"
+  echo -e "             ${DG}f ${R}o ${G}o ${Y}b ${B}a ${P}r ${C}f ${LG}o $N    ${DG_D}b ${R_D}a ${G_D}r ${Y_D}f ${B_D}o ${P_D}o ${C_D}b ${LG_D}a $N"
+  echo -e "         DG_ ${DG_DG}f ${DG_R}o ${DG_G}o ${DG_Y}b ${DG_B}a ${DG_P}r ${DG_C}f ${DG_LG}o $N    ${DG_DG_D}b ${DG_R_D}a ${DG_G_D}r ${DG_Y_D}f ${DG_B_D}o ${DG_P_D}o ${DG_C_D}b ${DG_LG_D}a $N"
+  echo -e "         R_  ${R_DG}f ${R_R}o ${R_G}o ${R_Y}b ${R_B}a ${R_P}r ${R_C}f ${R_LG}o $N    ${R_DG_D}b ${R_R_D}a ${R_G_D}r ${R_Y_D}f ${R_B_D}o ${R_P_D}o ${R_C_D}b ${R_LG_D}a $N"
+  echo -e "         G_  ${G_DG}f ${G_R}o ${G_G}o ${G_Y}b ${G_B}a ${G_P}r ${G_C}f ${G_LG}o $N    ${G_DG_D}b ${G_R_D}a ${G_G_D}r ${G_Y_D}f ${G_B_D}o ${G_P_D}o ${G_C_D}b ${G_LG_D}a $N"
+  echo -e "         Y_  ${Y_DG}f ${Y_R}o ${Y_G}o ${Y_Y}b ${Y_B}a ${Y_P}r ${Y_C}f ${Y_LG}o $N    ${Y_DG_D}b ${Y_R_D}a ${Y_G_D}r ${Y_Y_D}f ${Y_B_D}o ${Y_P_D}o ${Y_C_D}b ${Y_LG_D}a $N"
+  echo -e "         B_  ${B_DG}f ${B_R}o ${B_G}o ${B_Y}b ${B_B}a ${B_P}r ${B_C}f ${B_LG}o $N    ${B_DG_D}b ${B_R_D}a ${B_G_D}r ${B_Y_D}f ${B_B_D}o ${B_P_D}o ${B_C_D}b ${B_LG_D}a $N"
+  echo -e "         P_  ${P_DG}f ${P_R}o ${P_G}o ${P_Y}b ${P_B}a ${P_P}r ${P_C}f ${P_LG}o $N    ${P_DG_D}b ${P_R_D}a ${P_G_D}r ${P_Y_D}f ${P_B_D}o ${P_P_D}o ${P_C_D}b ${P_LG_D}a $N"
+  echo -e "         C_  ${C_DG}f ${C_R}o ${C_G}o ${C_Y}b ${C_B}a ${C_P}r ${C_C}f ${C_LG}o $N    ${C_DG_D}b ${C_R_D}a ${C_G_D}r ${C_Y_D}f ${C_B_D}o ${C_P_D}o ${C_C_D}b ${C_LG_D}a $N"
+  echo -e "         LG_ ${LG_DG}f ${LG_R}o ${LG_G}o ${LG_Y}b ${LG_B}a ${LG_P}r ${LG_C}f ${LG_LG}o $N    ${LG_DG_D}b ${LG_R_D}a ${LG_G_D}r ${LG_Y_D}f ${LG_B_D}o ${LG_P_D}o ${LG_C_D}b ${LG_LG_D}a $N"
+  echo -e "         ${_U}For example$N: B will be printed in ${B}Blue$N"
+  echo -e "                      _I will swap ${_I}foreground and background$N colors"
+  echo -e "                      Y_U will be printed in ${Y_U}Yellow and Underline$N"
+  echo -e "                      DG_R_D will be printed ${DG_R_D}over Dark Grey in Red and Bold$N"
 }
 
 setCol() {
-    _N=0;_B=1;_U=4;_K=5;_I=7
+    _N=0;_D=1;_U=4;_K=5;_I=7
     DG=30;R=31;G=32;Y=33;B=34;P=35;C=36;LG=37;K=38
     DG_=40;R_=41;G_=42;Y_=43;B_=44;P_=45;C_=46;LG_=47
     cols=""
-    for c in DG R G Y B P C LG K ""; do
+    for c in DG R G Y B P C LG ""; do
       for b in DG_ R_ G_ Y_ B_ P_ C_ LG_ ""; do
-        for s in _N _B _U _K _I ""; do
+        for s in _N _D _U _K _I ""; do
           colName=$b$c$s
           colVal=$(sed -e "s/;;/;/" -e "s/^;//" -e "s/;$//" <<< "${!b};${!c};${!s}")
           [[ "$colName" != "" ]] && cols="${cols}export $colName=\"\\033[${colVal}m\";"
@@ -48,7 +58,7 @@ do
   [[ "$1" == "--" ]] && shift && notEndLoop=false
   [[ "$1" == "--help" || "$1" == "-h" ]] && usage && exit
   [[ "$1" == "--only" || "$1" == "-o" ]] && ONLY=true && sedExpr="" && grepExpr="" && shift
-  [[ "$1" == "--and" || "$1" == "-a" ]] && AND=true && shift
+  [[ "$1" == "--and" || "$1" == "-a" ]] && ONLY=true && AND=true && shift
   [[ "$1" == "" ]] && notEndLoop=false
 
   if $notEndLoop; then
