@@ -1,0 +1,65 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage:   $(basename $0) [<color> <regex>]+"
+  echo "         Call a sed to higlight text with colors. Optionally show only matching lines."
+  echo "Options: --only|-o Show only matching lines of next patterns (use a grep on patterns)"
+  echo "         --        Stop arguments parsing and give the rest of arguments to sed"
+  echo "Color:   Color is defined with a combination of background and foreground and flag, at least one is needed"
+  echo "         <backround in [DG_ R_ G_ Y_ B_ P_ C_ LG_]><foreground in [DG R G Y B P C LG K]><flag in [_N _B _U _K _I]>"
+  echo "         DG = Dark Grey ; R = Red ; G = Green ; Y = Yellow ; B = Blue ; P = Purple ; C = Cyan ; LG = Light Grey ; K = blacK"
+  echo "         _N or N = Normal ; _B = Bold ; _U Underline ; _K = blinK ; _I = Invert"
+  echo "         For example: B will be printed in Blue"
+  echo "                      _I will swap foreground and background color"
+  echo "                      Y_U will be printed in Yellow and Underlined"
+  echo "                      DG_R_B will be printed over Dark Grey in Red and Bolded"
+}
+
+setCol() {
+    _N=0;_B=1;_U=4;_K=5;_I=7
+    DG=30;R=31;G=32;Y=33;B=34;P=35;C=36;LG=37;K=38
+    DG_=40;R_=41;G_=42;Y_=43;B_=44;P_=45;C_=46;LG_=47
+    cols=""
+    for c in DG R G Y B P C LG K ""; do
+      for b in DG_ R_ G_ Y_ B_ P_ C_ LG_ ""; do
+        for s in _N _B _U _K _I ""; do
+          colName=$b$c$s
+          colVal=$(sed -e "s/;;/;/" -e "s/^;//" -e "s/;$//" <<< "${!b};${!c};${!s}")
+          [[ "$colName" != "" ]] && cols="${cols}export $colName=\"\\033[${colVal}m\";"
+        done
+      done
+    done
+    eval "$cols"
+    export N=$_N
+}
+
+
+[[ "$N" == "" ]] && setCol
+
+[[ "$1" == "" ]] && echo Missing arguments 1>&2 && usage && exit 1
+
+ONLY=false
+notEndLoop=true
+
+while $notEndLoop
+do
+  [[ "$1" == "--" ]] && shift && notEndLoop=false
+  [[ "$1" == "--help" || "$1" == "-h" ]] && usage && exit
+  [[ "$1" == "--only" || "$1" == "-o" ]] && ONLY=true && sedExpr="" && shift
+  [[ "$1" == "" ]] && notEndLoop=false
+
+  if $notEndLoop; then
+    color=$1; shift
+    pattern=$1; shift
+    [[ "$pattern" == "" ]] && echo Missing pattern arguments 1>&2 && exit 1
+
+    sedExpr=$sedExpr" -e 's@\(${pattern}\)@$(echo -e ${!color})\1$(echo -e ${N})@g'" 
+    if $ONLY; then grepExpr=$grepExpr" -e '$pattern'"; fi
+  fi
+done
+
+if $ONLY; then
+  eval "grep $grepExpr | sed $sedExpr $@"
+else
+  eval "sed $sedExpr $@"
+fi
